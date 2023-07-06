@@ -1,0 +1,83 @@
+name: Lint and Test Charts
+
+on:
+  pull_request:
+    paths:
+    - "charts/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-chart:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      with:
+        fetch-depth: 0
+
+    - name: Install Helm
+      uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+      with:
+        version: v3.12.1 # renovate: datasource=github-releases depName=helm packageName=helm/helm
+
+    - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
+      with:
+        python-version: 3.7
+
+    - name: Install chart-testing
+      uses: helm/chart-testing-action@e8788873172cb653a90ca2e819d79d65a66d4e76 # v2.4.0
+      with:
+        version: v3.8.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
+
+    - name: Run lint
+      run: ct lint --config .github/ct.yaml
+
+  lint-docs:
+    runs-on: ubuntu-latest
+    needs: lint-chart
+    steps:
+    - name: Checkout
+      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+    - name: Run helm-docs
+      run: .github/helm-docs.sh
+
+  kubeconform-chart:
+    runs-on: ubuntu-latest
+    needs:
+    - lint-chart
+    - lint-docs
+    strategy:
+      matrix:
+        k8s:
+        # from https://github.com/yannh/kubernetes-json-schema
+        - v1.24.15
+        - v1.25.9
+        - v1.26.4
+        - v1.27.3
+    steps:
+    - name: Checkout
+      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      with:
+        fetch-depth: 0
+
+    - name: Run kubeconform
+      env:
+        KUBERNETES_VERSION: ${{ matrix.k8s }}
+      run: .github/kubeconform.sh
+
+    - name: Create kind ${{ matrix.k8s }} cluster
+      uses: helm/kind-action@fa81e57adff234b2908110485695db0f181f3c67 # v1.7.0
+      with:
+        node_image: kindest/node:${{ matrix.k8s }}
+        version: v0.20.0 # renovate: datasource=github-releases depName=kind packageName=kubernetes-sigs/kind
+
+    - name: Install chart-testing
+      uses: helm/chart-testing-action@e8788873172cb653a90ca2e819d79d65a66d4e76 # v2.4.0
+      with:
+        version: v3.8.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
+
+    - name: Run chart install
+      run: ct install --config .github/ct.yaml

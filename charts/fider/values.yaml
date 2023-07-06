@@ -1,0 +1,230 @@
+# -- Override the version of Kubernetes being used in a cluster
+kubeVersionOverride: null
+# -- Override the name of the chart
+nameOverride: null
+# -- Override the fully qualified app name
+fullnameOverride: null
+
+fider:
+  # -- https://fider.io/docs/how-to-show-legal-pages
+  legalPages:
+    # -- Enables legal pages
+    enabled: false
+    # -- Write your own Terms of Service in Markdown here
+    terms: |-
+      foo
+    # -- Write your own Privacy Policy in Markdown here
+    privacy: |-
+      bar
+
+  env:
+    # -- Public Host Name
+  - name: BASE_URL
+    value: https://feedback.yourdomain.com
+
+    # -- From which account e-mails will be sent
+  - name: EMAIL_NOREPLY
+    value: noreply@yourdomain.com
+
+    ###
+    # EMAIL
+    # Either EMAIL_MAILGUN_* or EMAIL_SMTP_* or EMAIL_AWSSES_* is required
+    ###
+
+    # - name: EMAIL_MAILGUN_API
+    #   value: key-yourkeygoeshere
+    # - name: EMAIL_MAILGUN_DOMAIN
+    #   value: yourdomain.com
+    # - name: EMAIL_MAILGUN_REGION
+    #   value: US
+
+  - name: EMAIL_SMTP_HOST
+    value: smtp.yourdomain.com
+  - name: EMAIL_SMTP_PORT
+    value: 587
+    # - name: EMAIL_SMTP_USERNAME
+    #   value: user@yourdomain.com
+    # - name: EMAIL_SMTP_ENABLE_STARTTLS
+    #   value: 'true'
+
+    # - name: EMAIL_AWSSES_REGION
+    #   value: us-east-1
+    # - name: EMAIL_AWSSES_ACCESS_KEY_ID
+    #   value: youraccesskeygoeshere
+
+  # -- These environment variables are stored in a Kubernetes secret
+  secretEnv:
+    # -- Connection string to the PostgreSQL database
+    DATABASE_URL: 'postgres://fider:s0m3g00dp4ssw0rd@postgresql-service:5432/fider?sslmode=disable'
+
+    # -- Use a 512-bit secret here
+    JWT_SECRET: 'VERY_STRONG_SECRET_SHOULD_BE_USED_HERE'
+
+    # EMAIL_SMTP_PASSWORD: 's0m3p4ssw0rd'
+
+    # EMAIL_AWSSES_SECRET_ACCESS_KEY: 'yoursecretkeygoeshere'
+
+# -- The number of replicas to create
+replicaCount: 1
+
+image:
+  # -- Repository to pull fider image from
+  repository: getfider/fider
+  # -- "IfNotPresent" to pull the image if no image with the specified tag exists on the node, "Always" to always pull the image or "Never" to try and use pre-pulled images
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion
+  # tag: ""
+
+# -- Names of the Kubernetes secrets for imagePullSecrets
+imagePullSecrets: []
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Key-value metadata for individual pods
+podAnnotations: {}
+
+# -- Defines the security settings and privileges for a pod
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# -- Fider Container-level security-context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+
+# -- Kubernetes service configuration
+service:
+  # -- The service type
+  type: ClusterIP
+  # -- The HTTP service port
+  port: 3000
+
+ingress:
+  # -- If `true`, an Ingress is created
+  enabled: false
+  # -- The name of the Ingress Class associated with the ingress
+  className: ""
+  # -- Ingress annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # -- Domain name Kubernetes Ingress rule looks for. Set it to the domain Fider will be hosted on
+  hosts:
+    # -- List of domain names Kubernetes Ingress rule looks for. Set it to the domains in which Fider will be hosted on
+    - host: fider.local
+      # --List of paths to use in Kubernetes Ingress rules
+      paths:
+        # -- Path to use in the Ingress
+        - path: /
+        # -- Ingress path type
+          pathType: prefix
+  # -- Ingress TLS settings
+  tls: []
+  #  - secretName: fider-tls
+  #    hosts:
+  #      - fider.local
+
+# -- Kubernetes resources
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# --  Automatically adjusts the number of replicas of a deployment or a replica set based on predefined metrics or custom rules to handle varying workload demands
+autoscaling:
+  # -- Create a HPA for the server deployment
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Selects the nodes where a pod can be scheduled based on node labels
+nodeSelector: {}
+
+# -- Allows a pod to tolerate or ignore specific node taints, enabling it to be scheduled on tainted nodes
+tolerations: []
+
+# -- Defines rules for pod scheduling based on node or pod properties, allowing for affinity (preferred) or anti-affinity (avoidance) relationships between pods and nodes
+affinity: {}
+#  podAntiAffinity:
+#    preferredDuringSchedulingIgnoredDuringExecution:
+#    - weight: 100
+#      podAffinityTerm:
+#        labelSelector:
+#          matchLabels:
+#            {{- include "fider.selectorLabels" . | nindent 6 }}
+#        topologyKey: kubernetes.io/hostname
+
+dbchecker:
+  # -- Enable an init container that validates the database connection
+  enabled: true
+  image:
+    # -- Container image used to check Database readiness at startup
+    repository: docker.io/atkrad/wait4x
+    # -- Image tag for the dbchecker image
+    tag: 2.13.0
+    # -- Image pull policy for the dbchecker image
+    pullPolicy: IfNotPresent
+  # -- SecurityContext for the dbchecker container
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+
+  # -- Resource requests and limits for the dbchecker container
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "32Mi"
+    limits:
+      cpu: "20m"
+      memory: "32Mi"
+
+serviceMonitor:
+  # -- If `true`, a ServiceMonitor resource for the prometheus-operator is created
+  enabled: false
+  # -- Labels for the ServiceMonitor
+  labels: {}
+  # -- Scrape interval. If not set, the Prometheus default scrape interval is used.
+  interval: ""
+  # -- MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+  metricRelabelings: []
+  # -- RelabelConfigs to apply to samples before scraping
+  relabelings: []
+
+postgresql:
+  # Configuration for a PostgreSQL subchart. Additional documentation at
+  # https://github.com/bitnami/charts/tree/master/bitnami/postgresql
+
+  # -- Enable the PostgreSQL subchart?
+  enabled: false
+  global:
+    postgresql:
+      auth:
+        # -- PostgreSQL username
+        username: fider
+        # -- PostgreSQL password
+        password: s0m3g00dp4ssw0rd
+        # -- PostgreSQL database
+        database: fider
+      service:
+        ports:
+          postgresql: 5432
+  primary:
+    persistence:
+      size: 8Gi
