@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fider.fullname" . }}
+  labels:
+    {{- include "fider.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "fider.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "fider.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "fider.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.dbchecker.enabled }}
+      initContainers:
+      - name: dbchecker
+        image: "{{ .Values.dbchecker.image.repository }}:{{ .Values.dbchecker.image.tag }}"
+        imagePullPolicy: {{ .Values.dbchecker.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.dbchecker.securityContext | nindent 10 }}
+      {{- if .Values.fider.secretEnv }}
+        envFrom:
+        - secretRef:
+            name: {{ template "fider.fullname" . }}-env-secrets
+      {{- end }}
+        command: ["wait4x"]
+        args: ["--no-color", "--timeout", "60s", "postgresql", "$(DATABASE_URL)"]
+        resources:
+          {{- toYaml .Values.dbchecker.resources | nindent 10 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: http-metrics
+          containerPort: 4000
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: http-metrics
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: http-metrics
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        env:
+        {{- range $envVar := .Values.fider.env }}
+        - name: {{ $envVar.name }}
+          value: {{ $envVar.value | squote }}
+        {{- end }}
+        - name: METRICS_ENABLED
+          value: 'true'
+        {{- if .Values.fider.secretEnv }}
+        envFrom:
+        - secretRef:
+            name: {{ template "fider.fullname" . }}-env-secrets
+        {{- end }}
+        {{- if .Values.fider.legalPages.enabled }}
+        volumeMounts:
+        - name: legal-pages-volume
+          mountPath: /app/etc
+          readOnly: true
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.fider.legalPages.enabled }}
+      volumes:
+      - name: legal-pages-volume
+        configMap:
+          name: {{ template "fider.fullname" . }}-legal-configmap
+      {{- end }}

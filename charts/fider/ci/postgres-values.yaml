@@ -1,0 +1,101 @@
+kubeVersionOverride: null
+nameOverride: null
+fullnameOverride: null
+fider:
+  legalPages:
+    enabled: false
+    terms: |-
+      foo
+    privacy: |-
+      bar
+  env:
+  - name: BASE_URL
+    value: http://fider
+  - name: EMAIL_NOREPLY
+    value: noreply@yourdomain.com
+  - name: EMAIL_SMTP_HOST
+    value: localhost
+  - name: EMAIL_SMTP_PORT
+    value: 25
+  secretEnv:
+    DATABASE_URL: "postgres://fider:hunter2@postgresql:5432/fider?sslmode=disable"
+    JWT_SECRET: VERY_STRONG_SECRET_SHOULD_BE_USED_HERE
+replicaCount: 1
+image:
+  repository: getfider/fider
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+podAnnotations: {}
+podSecurityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+service:
+  type: ClusterIP
+  port: 3000
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: fider.local
+      paths:
+        - path: /
+          pathType: prefix
+  tls: []
+resources: {}
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+nodeSelector: {}
+tolerations: []
+affinity: {}
+dbchecker:
+  enabled: true
+  image:
+    repository: docker.io/atkrad/wait4x
+    tag: 2.13.0
+    pullPolicy: IfNotPresent
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "32Mi"
+    limits:
+      cpu: "20m"
+      memory: "32Mi"
+serviceMonitor:
+  enabled: false
+  labels: {}
+  interval: ""
+  metricRelabelings: []
+  relabelings: []
+postgresql:
+  enabled: true
+  fullnameOverride: postgresql
+  global:
+    postgresql:
+      auth:
+        username: fider
+        password: hunter2
+        database: fider
+      service:
+        ports:
+          postgresql: 5432
+  primary:
+    persistence:
+      size: 8Gi
