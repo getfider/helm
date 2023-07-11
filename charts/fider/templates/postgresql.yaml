@@ -1,0 +1,60 @@
+{{- if .Values.postgresOperator.enabled }}
+{{- $fullName := include "fider.fullname" . }}
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: {{ $fullName }}-db
+  labels:
+    {{- include "fider.labels" . | nindent 4 }}
+spec:
+  teamId: {{ $fullName }}
+  volume:
+    size: {{ .Values.postgresOperator.volumeSize }}
+  numberOfInstances: {{ .Values.postgresOperator.instanceCount }}
+{{- if .Values.postgresOperator.podPriorityClassName }}
+  podPriorityClassName: {{ .Values.postgresOperator.podPriorityClassName }}
+{{- end }}
+  {{- if .Values.postgresOperator.resources }}
+  {{- with .Values.postgresOperator.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end -}}
+  {{- end }}
+  users:
+    {{- with .Values.postgresOperator.users -}}
+    {{ toYaml . | nindent 4 -}}
+    {{- end }}
+  databases:
+    {{- with .Values.postgresOperator.databases -}}
+    {{ toYaml . | nindent 4 -}}
+    {{- end }}
+  enableMasterLoadBalancer: {{ .Values.postgresOperator.MasterLoadBalancer }}
+  enableReplicaLoadBalancer: {{ .Values.postgresOperator.ReplicaLoadBalancer }}
+  enableLogicalBackup: {{ .Values.postgresOperator.enableLogicalBackup }}
+  logicalBackupSchedule: {{ .Values.postgresOperator.logicalBackupSchedule }}
+
+  {{- if .Values.postgresOperator.connectionPooler.enabled }}
+  enableConnectionPooler: true
+  connectionPooler:
+    numberOfInstances: {{ .Values.postgresOperator.connectionPooler.instanceCount }}
+    mode: {{ .Values.postgresOperator.connectionPooler.mode }}
+  {{- end }}
+  postgresql:
+    version: "15"
+    {{- if .Values.postgresOperator.parameters }}
+    {{- with .Values.postgresOperator.parameters }}
+    parameters:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
+  {{- if .Values.postgresOperator.patroni }}
+  {{- with .Values.postgresOperator.patroni }}
+  patroni:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- if .Values.postgresOperator.tls.enabled }}
+  tls:
+    secretName: "{{ $fullName }}-postgres-tls"
+{{- end }}
+{{- end }}
