@@ -1,6 +1,6 @@
 # fider
 
-![Version: 0.0.1](https://img.shields.io/badge/Version-0.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.21.1](https://img.shields.io/badge/AppVersion-0.21.1-informational?style=flat-square)
+![Version: 0.0.2](https://img.shields.io/badge/Version-0.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.21.1](https://img.shields.io/badge/AppVersion-0.21.1-informational?style=flat-square)
 
 An open platform to collect and prioritize feedback
 
@@ -62,6 +62,26 @@ The following table lists the configurable parameters of the chart and the defau
 | nodeSelector | object | `{}` | Selects the nodes where a pod can be scheduled based on node labels |
 | podAnnotations | object | `{}` | Key-value metadata for individual pods |
 | podSecurityContext | object | `{}` | Defines the security settings and privileges for a pod |
+| postgresOperator.MasterLoadBalancer | bool | `false` |  |
+| postgresOperator.ReplicaLoadBalancer | bool | `false` |  |
+| postgresOperator.connectionPooler.enabled | bool | `false` | Enable the connection pooler |
+| postgresOperator.connectionPooler.instanceCount | int | `3` |  |
+| postgresOperator.connectionPooler.mode | string | `"session"` | In which mode to run connection pooler, transaction or session. |
+| postgresOperator.connectionPooler.resources | object | `{}` | Consumers of this chart can override postgres cluster pod resource limits as follows: |
+| postgresOperator.databases.fider | string | `"fider"` |  |
+| postgresOperator.enableLogicalBackup | bool | `false` | Consumers of this chart can enable logical backups on a set schedule: |
+| postgresOperator.enabled | bool | `false` | Enable the [Postgres Operator](https://postgres-operator.readthedocs.io/)? |
+| postgresOperator.instanceCount | int | `1` |  |
+| postgresOperator.logicalBackupSchedule | string | `"0 0 * * *"` |  |
+| postgresOperator.parameters | object | `{}` | Consumers of this chart can override postgres parameters as follows: |
+| postgresOperator.patroni | object | `{"retry_timeout":30,"ttl":70}` | Patroni is a template for high availability (HA) PostgreSQL solutions using Python |
+| postgresOperator.podPriorityClassName | string | `""` | Consumers of this chart can set pod priority for postgres pods |
+| postgresOperator.resources | object | `{}` |  |
+| postgresOperator.tls.enabled | bool | `false` |  |
+| postgresOperator.tls.issuer | string | `"cert-manager-issuer-common"` |  |
+| postgresOperator.users.fider[0] | string | `"superuser"` |  |
+| postgresOperator.users.fider[1] | string | `"createdb"` |  |
+| postgresOperator.volumeSize | string | `"8Gi"` |  |
 | postgresql.enabled | bool | `false` | Enable the PostgreSQL subchart? |
 | postgresql.global.postgresql.auth.database | string | `"fider"` | PostgreSQL database |
 | postgresql.global.postgresql.auth.password | string | `"s0m3g00dp4ssw0rd"` | PostgreSQL password |

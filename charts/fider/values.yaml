@@ -228,3 +228,44 @@ postgresql:
   primary:
     persistence:
       size: 8Gi
+
+postgresOperator:
+  # -- Enable the [Postgres Operator](https://postgres-operator.readthedocs.io/)?
+  enabled: false
+  instanceCount: 1
+  volumeSize: 8Gi
+  # -- Consumers of this chart can set pod priority for postgres pods
+  podPriorityClassName: ""
+  MasterLoadBalancer: false
+  ReplicaLoadBalancer: false
+  users:
+    fider: ["superuser", "createdb"]
+  databases:
+    fider: fider
+  resources: {}
+  tls:
+    enabled: false
+    issuer: cert-manager-issuer-common
+  connectionPooler:
+  # -- Enable the connection pooler
+    enabled: false
+    instanceCount: 3
+  # -- In which mode to run connection pooler, transaction or session.
+    mode: session
+  # -- Consumers of this chart can override postgres cluster pod resource limits as follows:
+    resources: {}
+  #   limits:
+  #     cpu: "1"
+  #     memory: 500Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 100Mi
+  # -- Consumers of this chart can override postgres parameters as follows:
+  parameters: {}
+  # -- Patroni is a template for high availability (HA) PostgreSQL solutions using Python
+  patroni:
+    retry_timeout: 30
+    ttl: 70
+  # -- Consumers of this chart can enable logical backups on a set schedule:
+  enableLogicalBackup: false
+  logicalBackupSchedule: "0 0 * * *"
