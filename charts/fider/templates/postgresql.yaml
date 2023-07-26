@@ -57,4 +57,10 @@ spec:
   tls:
     secretName: "{{ $fullName }}-postgres-tls"
 {{- end }}
+  {{- if .Values.postgresOperator.podAnnotations }}
+  {{- with .Values.postgresOperator.podAnnotations }}
+  podAnnotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
 {{- end }}

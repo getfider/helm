@@ -1,6 +1,6 @@
 # fider
 
-![Version: 0.0.3](https://img.shields.io/badge/Version-0.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.21.1](https://img.shields.io/badge/AppVersion-0.21.1-informational?style=flat-square)
+![Version: 0.0.4](https://img.shields.io/badge/Version-0.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.21.1](https://img.shields.io/badge/AppVersion-0.21.1-informational?style=flat-square)
 
 An open platform to collect and prioritize feedback
 
@@ -75,6 +75,7 @@ The following table lists the configurable parameters of the chart and the defau
 | postgresOperator.logicalBackupSchedule | string | `"0 0 * * *"` |  |
 | postgresOperator.parameters | object | `{}` | Consumers of this chart can override postgres parameters as follows: |
 | postgresOperator.patroni | object | `{"retry_timeout":30,"ttl":70}` | Patroni is a template for high availability (HA) PostgreSQL solutions using Python |
+| postgresOperator.podAnnotations | object | `{}` | Annotations to attach arbitrary non-identifying metadata to pods. Clients such as tools and libraries can retrieve this metadata. |
 | postgresOperator.podPriorityClassName | string | `""` | Consumers of this chart can set pod priority for postgres pods |
 | postgresOperator.resources | object | `{}` |  |
 | postgresOperator.tls.enabled | bool | `false` |  |
