@@ -6,7 +6,7 @@ export PATH="./.bin:$PATH"
 set -euxo pipefail
 
 # renovate: datasource=github-releases depName=kubeconform packageName=yannh/kubeconform
-KUBECONFORM_VERSION=v0.6.2
+KUBECONFORM_VERSION=v0.6.3
 
 CHART_DIR="./charts/fider"
 
