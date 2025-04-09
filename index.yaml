@@ -4,6 +4,36 @@ entries:
   - annotations:
       licenses: AGPL-3.0-only
     apiVersion: v2
+    appVersion: 0.25.0
+    created: "2025-04-09T06:51:27.725863061Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 12.6.4
+    description: An open platform to collect and prioritize feedback
+    digest: 649057c60c46242586deb1980e5a6fbd1e9f6882d141d68a252276711e2d1558
+    home: https://fider.io/
+    icon: https://fider.io/favicon-32x32.png
+    keywords:
+    - feedback
+    - customer
+    - needs
+    - prioritisation
+    maintainers:
+    - email: 3769085+Footur@users.noreply.github.com
+      name: footur
+      url: https://github.com/footur
+    name: fider
+    sources:
+    - https://github.com/getfider/fider
+    type: application
+    urls:
+    - https://github.com/getfider/helm/releases/download/fider-0.0.6/fider-0.0.6.tgz
+    version: 0.0.6
+  - annotations:
+      licenses: AGPL-3.0-only
+    apiVersion: v2
     appVersion: 0.22.0
     created: "2024-09-04T06:56:05.953996392Z"
     dependencies:
@@ -186,4 +216,4 @@ entries:
     urls:
     - charts/postgresql-12.6.4.tgz
     version: 12.6.4
-generated: "2024-09-04T06:56:05.954021018Z"
+generated: "2025-04-09T06:51:27.725881184Z"
